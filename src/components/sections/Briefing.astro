@@ -21,19 +21,12 @@ import { site } from "../../data/site";
 
     <div class="briefing__panel">
       <!--
-        Honest wiring, no fake backend:
-        • Default: submitting opens the visitor's mail client to the contact address.
-        • To collect server-side instead, set FORM_ENDPOINT (Formspree/Basin/etc.)
-          in the script below — the form will POST there and show the success state.
+        The form writes to Supabase (Postgres) via its REST API using the PUBLIC
+        anon key. Row-level security lets the anon role INSERT only (never read),
+        so there is no fake backend and nothing sensitive is exposed.
+        Table + policy: supabase/schema.sql. Project config: the <script> below.
       -->
-      <form
-        class="form"
-        id="briefing-form"
-        action={`mailto:${site.contactEmail}`}
-        method="post"
-        enctype="text/plain"
-        novalidate
-      >
+      <form class="form" id="briefing-form" novalidate>
         <div class="field">
           <label for="email" class="field__label">Work email</label>
           <input
@@ -65,10 +58,18 @@ import { site } from "../../data/site";
         <button type="submit" class="btn btn--primary form__submit">Request a briefing</button>
 
         <p class="form__success" id="form-success" role="status" aria-live="polite" hidden>
-          Thanks — opening your mail client so you can send the request. If nothing happens, write
-          to{" "}
+          Thanks — your request is in. We'll be in touch shortly.
+        </p>
+        <p class="form__success form__success--error" id="form-error" role="alert" hidden>
+          Something went wrong — please try again, or email{" "}
           <a class="link-underline" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
         </p>
+        <noscript>
+          <p class="form__success">
+            JavaScript is required to send this form. Please email{" "}
+            <a class="link-underline" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+          </p>
+        </noscript>
       </form>
     </div>
   </div>
@@ -168,6 +169,9 @@ import { site } from "../../data/site";
     border-top: 1px solid var(--color-hairline);
     padding-top: 1rem;
   }
+  .form__success--error {
+    color: var(--color-alert);
+  }
 
   @media (min-width: 880px) {
     .briefing__grid {
@@ -177,72 +181,81 @@ import { site } from "../../data/site";
 </style>
 
 <script>
-  // ── Configure to collect server-side. Leave null to use the mailto fallback. ──
-  const FORM_ENDPOINT: string | null = null; // e.g. "https://formspree.io/f/xxxxxx"
+  // ── Supabase project ────────────────────────────────────────────────────────
+  // The anon key is PUBLIC by design — safe to ship in client code. The table is
+  // protected by row-level security (the anon role can only INSERT, never read),
+  // so submissions go straight to your database and nothing sensitive is exposed.
+  // To rotate the key or point at another project, edit these two lines.
+  const SUPABASE_URL = "https://cpnbzetijphqvkwivvup.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwbmJ6ZXRpanBocXZrd2l2dnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODc4OTMsImV4cCI6MjA5Nzk2Mzg5M30.Vi2Dv_w99MA9-FovzDKeM4Qyb4aXDD-2QBPi6a8nfcw";
+  const TABLE = "briefing_requests";
 
   const form = document.getElementById("briefing-form") as HTMLFormElement | null;
   const email = document.getElementById("email") as HTMLInputElement | null;
-  const error = document.getElementById("email-error");
+  const note = document.getElementById("note") as HTMLTextAreaElement | null;
+  const fieldError = document.getElementById("email-error");
   const success = document.getElementById("form-success");
+  const submitError = document.getElementById("form-error");
   const submit = form?.querySelector<HTMLButtonElement>(".form__submit");
 
   const valid = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
-  const showError = (show: boolean) => {
-    if (!error || !email) return;
-    error.hidden = !show;
+  const showFieldError = (show: boolean) => {
+    if (!fieldError || !email) return;
+    fieldError.hidden = !show;
     email.setAttribute("aria-invalid", String(show));
   };
 
   email?.addEventListener("input", () => {
-    if (email.getAttribute("aria-invalid") === "true" && valid(email.value)) showError(false);
+    if (email.getAttribute("aria-invalid") === "true" && valid(email.value)) showFieldError(false);
   });
 
   form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
     if (!email) return;
     if (!valid(email.value)) {
-      e.preventDefault();
-      showError(true);
+      showFieldError(true);
       email.focus();
       return;
     }
-    showError(false);
+    showFieldError(false);
+    if (submitError) submitError.hidden = true;
 
-    // If a real endpoint is configured, submit via fetch and show success.
-    if (FORM_ENDPOINT) {
-      e.preventDefault();
-      try {
-        if (submit) {
-          submit.disabled = true;
-          submit.textContent = "Sending…";
-        }
-        const res = await fetch(FORM_ENDPOINT, {
-          method: "POST",
-          headers: { Accept: "application/json" },
-          body: new FormData(form),
-        });
-        if (!res.ok) throw new Error(String(res.status));
-        form
-          .querySelectorAll<HTMLElement>(".field, .form__submit")
-          .forEach((el) => (el.hidden = true));
-        if (success) {
-          success.hidden = false;
-          success.textContent = "Thanks — your request is in. We'll be in touch shortly.";
-        }
-      } catch {
-        if (submit) {
-          submit.disabled = false;
-          submit.textContent = "Request a briefing";
-        }
-        if (success) {
-          success.hidden = false;
-          success.textContent = "Something went wrong. Please email us directly instead.";
-        }
-      }
-      return;
+    const restore = submit?.textContent ?? "Request a briefing";
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = "Sending…";
     }
 
-    // Default: let the mailto action proceed and surface an honest success note.
-    if (success) success.hidden = false;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          email: email.value.trim(),
+          note: note?.value.trim() || null,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      // Replace the inputs with the confirmation.
+      form.querySelectorAll<HTMLElement>(".field, .form__submit").forEach((el) => {
+        el.hidden = true;
+      });
+      if (success) success.hidden = false;
+    } catch (err) {
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = restore;
+      }
+      if (submitError) submitError.hidden = false;
+      console.error("Briefing submission failed:", err);
+    }
   });
 </script>

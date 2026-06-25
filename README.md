@@ -87,10 +87,14 @@ these and swap in real values:
   [`src/data/site.ts`](src/data/site.ts), and [`public/robots.txt`](public/robots.txt). Confirm the
   website domain matches the email domain (`karajan.io`) before launch.
 - **Contact email** — `contact@karajan.io`, set in [`src/data/site.ts`](src/data/site.ts).
-- **Briefing form** — by default the form opens the visitor's mail client (no backend, no fake
-  submission). To collect submissions server-side, set `FORM_ENDPOINT` in the `<script>` of
-  [`src/components/sections/Briefing.astro`](src/components/sections/Briefing.astro) to a
-  Formspree/Basin-style URL; it will `POST` there and show the success state.
+- **Briefing form → Supabase** — the form writes each request straight to a Supabase (Postgres)
+  table via its REST API. One-time setup: in the Supabase dashboard open **SQL Editor**, paste
+  [`supabase/schema.sql`](supabase/schema.sql), and **Run** — that creates the `briefing_requests`
+  table and a row-level-security policy that lets anonymous visitors _insert only_ (they can't read
+  other submissions). The project URL and **public anon key** live in the `<script>` of
+  [`src/components/sections/Briefing.astro`](src/components/sections/Briefing.astro); the anon key is
+  designed to be public, and your data stays protected by RLS. Read submissions in the dashboard
+  under **Table editor → briefing_requests**.
 - **Legal links** — `Privacy` / `Imprint` in [`src/components/Footer.astro`](src/components/Footer.astro)
   point to `#`.
 - **Social proof** — the hero line _"In conversation with European defence & infrastructure
