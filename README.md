@@ -83,9 +83,10 @@ centralised enough that an **ES/EN** split later is a parallel data object, not 
 Everything below is intentionally honest about being an early-stage placeholder. Search the repo for
 these and swap in real values:
 
-- **Domain** — `https://karajan.tech` in [`astro.config.mjs`](astro.config.mjs),
-  [`src/data/site.ts`](src/data/site.ts), and [`public/robots.txt`](public/robots.txt).
-- **Contact email** — `hello@karajan.tech` in [`src/data/site.ts`](src/data/site.ts).
+- **Domain** — set to `https://karajan.io` in [`astro.config.mjs`](astro.config.mjs),
+  [`src/data/site.ts`](src/data/site.ts), and [`public/robots.txt`](public/robots.txt). Confirm the
+  website domain matches the email domain (`karajan.io`) before launch.
+- **Contact email** — `contact@karajan.io`, set in [`src/data/site.ts`](src/data/site.ts).
 - **Briefing form** — by default the form opens the visitor's mail client (no backend, no fake
   submission). To collect submissions server-side, set `FORM_ENDPOINT` in the `<script>` of
   [`src/components/sections/Briefing.astro`](src/components/sections/Briefing.astro) to a

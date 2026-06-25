@@ -13,11 +13,12 @@ export const site = {
   /** One honest line of positioning. */
   tagline:
     "The vendor-neutral orchestration and decision layer for heterogeneous autonomous systems.",
-  /** Placeholder — the founder should replace with the real inbox before launch. */
-  contactEmail: "hello@karajan.tech",
+  /** Real contact inbox. */
+  contactEmail: "contact@karajan.io",
   /** Canonical production origin (mirrors astro.config `site`). */
-  url: "https://karajan.tech",
-  locale: "en",
+  url: "https://karajan.io",
+  /** BCP-47 tag; British English matches the copy. Drives <html lang> + og:locale. */
+  locale: "en-GB",
 } as const;
 
 export const nav: { label: string; href: string }[] = [
@@ -30,7 +31,7 @@ export const nav: { label: string; href: string }[] = [
 export const seo = {
   title: "Karajan — The conductor for autonomous systems",
   description:
-    "Karajan is the vendor-neutral orchestration and decision layer that turns fragmented fleets of drones, robots, and sensors into a single, explainable, human-supervised mission network.",
+    "The vendor-neutral orchestration and decision layer that turns fragmented fleets of drones, robots, and sensors into one explainable, human-supervised network.",
   ogImage: "/og.png",
   ogImageAlt:
     "Karajan — one neutral layer conducting heterogeneous autonomous systems into a single mission.",
@@ -54,7 +55,7 @@ export const capabilities: Capability[] = [
     index: "02",
     label: "ACCOUNTABILITY",
     title: "Explainable & supervised",
-    body: "Every decision is legible and accountable. Governed autonomy, not a black box. A human stays on the loop, in command.",
+    body: "Every decision is legible and accountable. Governed autonomy, not a black box. A human stays on the loop — supervising, able to intervene.",
   },
   {
     index: "03",

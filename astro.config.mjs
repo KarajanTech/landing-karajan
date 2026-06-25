@@ -3,8 +3,8 @@ import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
-// Canonical production origin. Replace with the real domain before launch.
-const SITE = "https://karajan.tech";
+// Canonical production origin. Confirm the web domain matches the email domain.
+const SITE = "https://karajan.io";
 
 // https://astro.build/config
 export default defineConfig({

@@ -175,7 +175,7 @@ const assets = [
   }
   .module {
     border: 1px solid var(--color-hairline);
-    border-radius: 4px;
+    border-radius: var(--radius);
     padding: 0.7rem 0.85rem;
     font-size: 0.86rem;
     color: var(--color-text);
@@ -231,7 +231,7 @@ const assets = [
     color: var(--color-text-faint);
   }
 
-  /* Conducting fan */
+  /* Conducting fan — endpoints assume a single row of 6 assets. */
   .fan {
     width: 100%;
     height: 56px;
@@ -259,7 +259,7 @@ const assets = [
     gap: 0.55rem;
     padding: 0.9rem 0.4rem;
     border: 1px solid var(--color-hairline);
-    border-radius: 4px;
+    border-radius: var(--radius);
   }
   .asset__glyph {
     width: 18px;
@@ -282,6 +282,13 @@ const assets = [
     }
     .assets {
       grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  /* Below 720px the assets wrap to 3×2, so the single-row fan no longer aligns. */
+  @media (max-width: 719px) {
+    .fan {
+      display: none;
     }
   }
 </style>

@@ -96,13 +96,32 @@
     bob: number; // phase offset for idle breathing
   }
 
+  // Accent as an "r,g,b" string for alpha-variant strokes; resolved from the
+  // design tokens at runtime (see syncPalette) so the canvas tracks --color-accent.
+  let ACCENT = "84,230,193";
   const PALETTE = {
     line: "rgba(255,255,255,0.10)",
-    lineLit: "rgba(84,230,193,0.85)",
     node: "rgba(153,161,173,0.85)",
-    nodeFlash: "rgba(84,230,193,1)",
-    conductor: "rgba(84,230,193,1)",
+    conductor: "rgb(84,230,193)",
     conductorDim: "rgba(46,140,119,0.9)",
+  };
+
+  const rgbOf = (hex: string) => {
+    const h = hex.trim().replace("#", "");
+    const full = h.length === 3 ? h.replace(/./g, (c) => c + c) : h;
+    const n = parseInt(full, 16);
+    return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+  };
+
+  // Pull the palette from the CSS design tokens — the single source of truth.
+  const syncPalette = () => {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
+    ACCENT = rgbOf(v("--color-accent", "#54e6c1"));
+    PALETTE.line = v("--color-hairline", "rgba(255,255,255,0.10)");
+    PALETTE.node = `rgba(${rgbOf(v("--color-text-muted", "#99a1ad"))},0.85)`;
+    PALETTE.conductor = `rgb(${ACCENT})`;
+    PALETTE.conductorDim = `rgba(${rgbOf(v("--color-accent-dim", "#2e8c77"))},0.9)`;
   };
 
   // Seeded PRNG (mulberry32) — deterministic scatter, no Math.random at runtime.
@@ -188,11 +207,16 @@
     y: number,
     s: number,
     flash: number,
+    styles?: { stroke: string; fill: string },
   ) {
     const lit = flash > 0.02;
     ctx.lineWidth = 1.4;
-    ctx.strokeStyle = lit ? `rgba(84,230,193,${0.5 + flash * 0.5})` : PALETTE.node;
-    ctx.fillStyle = `rgba(84,230,193,${flash * 0.85})`;
+    ctx.strokeStyle = styles
+      ? styles.stroke
+      : lit
+        ? `rgba(${ACCENT},${0.5 + flash * 0.5})`
+        : PALETTE.node;
+    ctx.fillStyle = styles ? styles.fill : `rgba(${ACCENT},${flash * 0.85})`;
 
     ctx.beginPath();
     if (type === "tri") {
@@ -215,6 +239,7 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    syncPalette();
     const agents = buildAgents();
     let W = 0;
     let H = 0;
@@ -361,28 +386,34 @@
         ctx!.stroke();
       });
 
-      // Travelling pulse dots (accent — the only lit strokes)
+      // Travelling pulse dots (accent — the only lit strokes). The alpha is a
+      // per-frame constant, so build the fill string once, not once per node.
+      ctx!.fillStyle = `rgba(${ACCENT},${0.25 + (1 - beat) * 0.5})`;
       agents.forEach((ag) => {
         const ax = px(ag.x);
         const ay = py(ag.y);
         const bobY = Math.sin(elapsed / 1600 + ag.bob) * bob;
         const dx = ax + (cx - ax) * (1 - eased);
         const dy = ay + bobY + (cy - ay) * (1 - eased);
-        ctx!.fillStyle = `rgba(84,230,193,${0.25 + (1 - beat) * 0.5})`;
         ctx!.beginPath();
         ctx!.arc(dx, dy, 1.6, 0, Math.PI * 2);
         ctx!.fill();
       });
 
-      // Nodes (flash on arrival)
+      // Nodes (flash on arrival). Flash is per-frame constant → styles built once.
+      const glyphLit = arrival > 0.02;
+      const glyphStyles = {
+        stroke: glyphLit ? `rgba(${ACCENT},${0.5 + arrival * 0.5})` : PALETTE.node,
+        fill: `rgba(${ACCENT},${arrival * 0.85})`,
+      };
       agents.forEach((ag) => {
         const bobY = Math.sin(elapsed / 1600 + ag.bob) * bob;
-        drawGlyph(ctx!, ag.type, px(ag.x), py(ag.y) + bobY, s, arrival);
+        drawGlyph(ctx!, ag.type, px(ag.x), py(ag.y) + bobY, s, arrival, glyphStyles);
       });
 
       // Conductor — strikes on the downbeat, steady ring breathing outward
       const ringR = s * (3.2 + emit * 2.2);
-      ctx!.strokeStyle = `rgba(84,230,193,${0.18 + emit * 0.5})`;
+      ctx!.strokeStyle = `rgba(${ACCENT},${0.18 + emit * 0.5})`;
       ctx!.lineWidth = 1;
       ctx!.beginPath();
       ctx!.arc(cx, cy, ringR, 0, Math.PI * 2);
@@ -408,9 +439,11 @@
     };
 
     // Pause off-screen and when the tab is hidden — no wasted work, no jank.
+    let onScreen = false;
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
+          onScreen = e.isIntersecting;
           if (e.isIntersecting && !document.hidden) play();
           else pause();
         }
@@ -419,9 +452,11 @@
     );
     io.observe(canvas);
 
+    // On tab return, only resume if the canvas is actually on-screen (the IO
+    // won't re-fire when intersection state hasn't changed).
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) pause();
-      else play();
+      else if (onScreen) play();
     });
   }
 

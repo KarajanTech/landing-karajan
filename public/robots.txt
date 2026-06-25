@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://karajan.tech/sitemap-index.xml
+Sitemap: https://karajan.io/sitemap-index.xml

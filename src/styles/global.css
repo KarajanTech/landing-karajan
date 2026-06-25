@@ -18,11 +18,13 @@
   --color-surface-2: #161a22;
   --color-hairline: rgba(255, 255, 255, 0.1); /* borders — favour these over shadows */
   --color-hairline-strong: rgba(255, 255, 255, 0.18);
+  --color-field-border: #646b78; /* form control boundaries — ≥3:1 for WCAG 1.4.11 */
   --color-text: #eceef1; /* primary text */
   --color-text-muted: #99a1ad; /* secondary text */
-  --color-text-faint: #5c636e; /* labels, captions */
+  --color-text-faint: #8b929d; /* labels, captions — AA 4.5:1+ on ink & surfaces */
   --color-accent: #54e6c1; /* signal — phosphor cyan-green, reads as instrumentation */
   --color-accent-dim: #2e8c77; /* accent at rest / borders */
+  --color-accent-bright: #6cf0d0; /* accent hover-lift only */
   --color-alert: #f2b14c; /* warm amber — tiny "active/live" states only, sparingly */
 
   /* Type families */
@@ -37,7 +39,6 @@
   /* Fluid type scale (clamp) */
   --text-eyebrow: 0.75rem;
   --text-hero: clamp(2.75rem, 1.6rem + 5.4vw, 5.5rem);
-  --text-display: clamp(2.2rem, 1.3rem + 4vw, 3.75rem);
   --text-h2: clamp(1.85rem, 1.2rem + 2.6vw, 3rem);
   --text-h3: clamp(1.25rem, 1.05rem + 0.9vw, 1.6rem);
   --text-lead: clamp(1.08rem, 0.98rem + 0.55vw, 1.35rem);
@@ -236,8 +237,8 @@
     color: var(--color-ink);
   }
   .btn--primary:hover {
-    background: #6cf0d0;
-    border-color: #6cf0d0;
+    background: var(--color-accent-bright);
+    border-color: var(--color-accent-bright);
   }
 
   /* Animated hairline underline link */
@@ -278,9 +279,6 @@
   .text-hero {
     font-size: var(--text-hero);
   }
-  .text-display {
-    font-size: var(--text-display);
-  }
   .text-h2 {
     font-size: var(--text-h2);
   }
@@ -306,6 +304,7 @@
     .js .reveal.is-visible {
       opacity: 1;
       transform: none;
+      will-change: auto;
     }
   }
 }

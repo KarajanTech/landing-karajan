@@ -225,4 +225,10 @@ import { nav, site } from "../data/site";
       toggle.focus();
     }
   });
+
+  // Reset to closed when crossing into the desktop layout, so the DOM open-state
+  // can't desync from the CSS that hides the toggle/panel above 880px.
+  window.matchMedia("(min-width: 880px)").addEventListener("change", (e) => {
+    if (e.matches) setOpen(false);
+  });
 </script>
