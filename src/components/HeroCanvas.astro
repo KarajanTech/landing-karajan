@@ -1,0 +1,435 @@
+---
+/**
+ * The orchestration visual — a bespoke 2D-canvas animation.
+ *
+ * Heterogeneous agents (triangle = UAV, square = UGV, circle = sensor) are
+ * connected by hairlines to a central conductor. On each slow beat a pulse
+ * travels outward and every node lands on the downbeat together; periodically
+ * the field re-forms into coordinated formations, then disperses.
+ *
+ * Lazy (inits on idle / when in view), pauses off-screen and when the tab is
+ * hidden, and respects prefers-reduced-motion by drawing one still constellation.
+ */
+---
+
+<div
+  class="hero__viz"
+  role="img"
+  aria-label="A field of autonomous agents — drones, ground robots and sensors — connected by signal lines to a central conductor that pulses in steady rhythm and draws them into coordinated formations."
+>
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero__viz-legend" aria-hidden="true">
+    <span><i class="g g--tri"></i> UAV</span>
+    <span><i class="g g--sq"></i> UGV</span>
+    <span><i class="g g--ci"></i> Sensor</span>
+  </div>
+</div>
+
+<style>
+  .hero__viz {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 78vh;
+    /* Borderless — a soft radial mask blends the field into the page. */
+    -webkit-mask-image: radial-gradient(120% 110% at 55% 45%, #000 55%, transparent 100%);
+    mask-image: radial-gradient(120% 110% at 55% 45%, #000 55%, transparent 100%);
+  }
+  #hero-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .hero__viz-legend {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    gap: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .hero__viz-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .g {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--color-accent-dim);
+    display: inline-block;
+  }
+  .g--tri {
+    border: 0;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 8px solid var(--color-accent-dim);
+  }
+  .g--ci {
+    border-radius: 50%;
+  }
+
+  @media (max-width: 880px) {
+    .hero__viz {
+      aspect-ratio: 4 / 3;
+      max-height: 46vh;
+    }
+  }
+</style>
+
+<script>
+  type AgentType = "tri" | "sq" | "ci";
+  interface Agent {
+    type: AgentType;
+    x: number; // current normalised position (0..1)
+    y: number;
+    tx: number; // target normalised position
+    ty: number;
+    home: { x: number; y: number };
+    forms: { x: number; y: number }[];
+    bob: number; // phase offset for idle breathing
+  }
+
+  const PALETTE = {
+    line: "rgba(255,255,255,0.10)",
+    lineLit: "rgba(84,230,193,0.85)",
+    node: "rgba(153,161,173,0.85)",
+    nodeFlash: "rgba(84,230,193,1)",
+    conductor: "rgba(84,230,193,1)",
+    conductorDim: "rgba(46,140,119,0.9)",
+  };
+
+  // Seeded PRNG (mulberry32) — deterministic scatter, no Math.random at runtime.
+  function rng(seed: number) {
+    return () => {
+      seed |= 0;
+      seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const COND = { x: 0.52, y: 0.47 }; // conductor anchor (normalised)
+  const N = 22;
+  const BEAT_MS = 2200; // slow, steady metronome
+  const HOLD_SCATTER = 4200;
+  const HOLD_FORM = 5200;
+
+  function buildAgents(): Agent[] {
+    const r = rng(20260625);
+    const types: AgentType[] = ["tri", "sq", "ci"];
+    const agents: Agent[] = [];
+    for (let i = 0; i < N; i++) {
+      // Scattered home — distributed in an annulus around the conductor.
+      const a = r() * Math.PI * 2;
+      const rad = 0.18 + r() * 0.34;
+      const home = {
+        x: COND.x + Math.cos(a) * rad * 0.92,
+        y: COND.y + Math.sin(a) * rad,
+      };
+
+      // Formation targets, computed below; placeholder filled after loop.
+      agents.push({
+        type: types[i % 3],
+        x: home.x,
+        y: home.y,
+        tx: home.x,
+        ty: home.y,
+        home,
+        forms: [],
+        bob: r() * Math.PI * 2,
+      });
+    }
+
+    // Formation A — orchestra fan (an arc opening downward around the conductor).
+    // Formation B — concentric ring.
+    // Formation C — upward wedge / V converging on the conductor.
+    agents.forEach((ag, i) => {
+      const t = i / (N - 1);
+
+      const fanAngle = Math.PI * (0.62 + t * 0.76); // ~112°→248°
+      const fanRad = 0.3 + (i % 3) * 0.052;
+      const fan = {
+        x: COND.x + Math.cos(fanAngle) * fanRad * 0.95,
+        y: COND.y + 0.06 + Math.sin(fanAngle) * fanRad,
+      };
+
+      const ringAngle = t * Math.PI * 2;
+      const ringRad = 0.3 + (i % 2) * 0.07;
+      const ring = {
+        x: COND.x + Math.cos(ringAngle) * ringRad * 0.92,
+        y: COND.y + Math.sin(ringAngle) * ringRad,
+      };
+
+      const side = i % 2 === 0 ? -1 : 1;
+      const depth = Math.floor(i / 2) / Math.floor(N / 2);
+      const wedge = {
+        x: COND.x + side * (0.05 + depth * 0.34),
+        y: COND.y + 0.1 + depth * 0.32,
+      };
+
+      ag.forms = [fan, ring, wedge];
+    });
+
+    return agents;
+  }
+
+  function drawGlyph(
+    ctx: CanvasRenderingContext2D,
+    type: AgentType,
+    x: number,
+    y: number,
+    s: number,
+    flash: number,
+  ) {
+    const lit = flash > 0.02;
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = lit ? `rgba(84,230,193,${0.5 + flash * 0.5})` : PALETTE.node;
+    ctx.fillStyle = `rgba(84,230,193,${flash * 0.85})`;
+
+    ctx.beginPath();
+    if (type === "tri") {
+      ctx.moveTo(x, y - s);
+      ctx.lineTo(x + s * 0.9, y + s * 0.7);
+      ctx.lineTo(x - s * 0.9, y + s * 0.7);
+      ctx.closePath();
+    } else if (type === "sq") {
+      ctx.rect(x - s * 0.8, y - s * 0.8, s * 1.6, s * 1.6);
+    } else {
+      ctx.arc(x, y, s * 0.92, 0, Math.PI * 2);
+    }
+    if (lit) ctx.fill();
+    ctx.stroke();
+  }
+
+  function start() {
+    const canvas = document.getElementById("hero-canvas") as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const agents = buildAgents();
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = rect.width;
+      H = rect.height;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+
+    // px helpers — keep the field within a centred square so it never distorts.
+    const span = () => Math.min(W, H);
+    const px = (nx: number) => W / 2 + (nx - 0.5) * span();
+    const py = (ny: number) => H / 2 + (ny - 0.5) * span();
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    // A bare resize() clears the canvas. The animated path repaints itself via
+    // rAF; the still path must be told to repaint after a reflow (e.g. font load).
+    const ro = new ResizeObserver(() => {
+      resize();
+      if (reduce.matches) renderStill();
+    });
+    ro.observe(canvas);
+
+    function renderStill() {
+      // Settle agents into the fan formation for a composed, still constellation.
+      agents.forEach((ag) => {
+        ag.x = ag.forms[0].x;
+        ag.y = ag.forms[0].y;
+      });
+      ctx!.clearRect(0, 0, W, H);
+      const cx = px(COND.x);
+      const cy = py(COND.y);
+      const s = span() * 0.018;
+
+      ctx!.lineWidth = 1;
+      agents.forEach((ag) => {
+        ctx!.strokeStyle = PALETTE.line;
+        ctx!.beginPath();
+        ctx!.moveTo(cx, cy);
+        ctx!.lineTo(px(ag.x), py(ag.y));
+        ctx!.stroke();
+      });
+      agents.forEach((ag) => drawGlyph(ctx!, ag.type, px(ag.x), py(ag.y), s, 0));
+
+      // Conductor
+      ctx!.fillStyle = PALETTE.conductor;
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, s * 1.5, 0, Math.PI * 2);
+      ctx!.fill();
+      ctx!.strokeStyle = PALETTE.conductorDim;
+      ctx!.lineWidth = 1;
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, s * 3.6, 0, Math.PI * 2);
+      ctx!.stroke();
+    }
+
+    if (reduce.matches) {
+      renderStill();
+      // If the user later disables reduced motion, upgrade to animation.
+      reduce.addEventListener?.("change", (e) => {
+        if (!e.matches) location.reload();
+      });
+      return;
+    }
+
+    // ── Animated path ───────────────────────────────────────────────────────
+    let raf = 0;
+    let last = 0;
+    let elapsed = 0; // ms since load (animation clock)
+    let running = false;
+
+    // Formation state machine
+    let stateTime = 0;
+    let inFormation = false;
+    let formIndex = 0;
+
+    const setTargets = () => {
+      agents.forEach((ag) => {
+        const t = inFormation ? ag.forms[formIndex] : ag.home;
+        ag.tx = t.x;
+        ag.ty = t.y;
+      });
+    };
+    setTargets();
+
+    function frame(now: number) {
+      if (!running) return;
+      if (!last) last = now;
+      let dt = now - last;
+      last = now;
+      if (dt > 64) dt = 64; // clamp after tab-restore / jank
+      elapsed += dt;
+
+      // Formation timeline
+      stateTime += dt;
+      const dwell = inFormation ? HOLD_FORM : HOLD_SCATTER;
+      if (stateTime > dwell) {
+        stateTime = 0;
+        if (inFormation) {
+          inFormation = false;
+        } else {
+          inFormation = true;
+          formIndex = (formIndex + 1) % 3;
+        }
+        setTargets();
+      }
+
+      // Frame-rate-independent easing toward targets (slow, quiet)
+      const k = 1 - Math.exp(-dt / 620);
+      const bob = span() * 0.006;
+      agents.forEach((ag) => {
+        ag.x += (ag.tx - ag.x) * k;
+        ag.y += (ag.ty - ag.y) * k;
+      });
+
+      // Beat — pulse fraction travels conductor → nodes; all land on the downbeat.
+      const beat = (elapsed % BEAT_MS) / BEAT_MS; // 0..1
+      const eased = beat * beat * (3 - 2 * beat); // smoothstep along the line
+      const arrival = Math.pow(beat, 7); // node flash as the pulse lands
+      const emit = Math.pow(1 - beat, 5); // conductor strike at the downbeat
+
+      ctx!.clearRect(0, 0, W, H);
+
+      const cx = px(COND.x);
+      const cy = py(COND.y);
+      const s = span() * 0.018;
+
+      // Connection hairlines
+      ctx!.lineWidth = 1;
+      ctx!.strokeStyle = PALETTE.line;
+      agents.forEach((ag) => {
+        ctx!.beginPath();
+        ctx!.moveTo(cx, cy);
+        ctx!.lineTo(px(ag.x), py(ag.y));
+        ctx!.stroke();
+      });
+
+      // Travelling pulse dots (accent — the only lit strokes)
+      agents.forEach((ag) => {
+        const ax = px(ag.x);
+        const ay = py(ag.y);
+        const bobY = Math.sin(elapsed / 1600 + ag.bob) * bob;
+        const dx = ax + (cx - ax) * (1 - eased);
+        const dy = ay + bobY + (cy - ay) * (1 - eased);
+        ctx!.fillStyle = `rgba(84,230,193,${0.25 + (1 - beat) * 0.5})`;
+        ctx!.beginPath();
+        ctx!.arc(dx, dy, 1.6, 0, Math.PI * 2);
+        ctx!.fill();
+      });
+
+      // Nodes (flash on arrival)
+      agents.forEach((ag) => {
+        const bobY = Math.sin(elapsed / 1600 + ag.bob) * bob;
+        drawGlyph(ctx!, ag.type, px(ag.x), py(ag.y) + bobY, s, arrival);
+      });
+
+      // Conductor — strikes on the downbeat, steady ring breathing outward
+      const ringR = s * (3.2 + emit * 2.2);
+      ctx!.strokeStyle = `rgba(84,230,193,${0.18 + emit * 0.5})`;
+      ctx!.lineWidth = 1;
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, ringR, 0, Math.PI * 2);
+      ctx!.stroke();
+
+      ctx!.fillStyle = PALETTE.conductor;
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, s * (1.4 + emit * 0.6), 0, Math.PI * 2);
+      ctx!.fill();
+
+      raf = requestAnimationFrame(frame);
+    }
+
+    const play = () => {
+      if (running) return;
+      running = true;
+      last = 0;
+      raf = requestAnimationFrame(frame);
+    };
+    const pause = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    // Pause off-screen and when the tab is hidden — no wasted work, no jank.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !document.hidden) play();
+          else pause();
+        }
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(canvas);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pause();
+      else play();
+    });
+  }
+
+  // Lazy init — wait for idle so the hero text paints first.
+  const boot = () => start();
+  if ("requestIdleCallback" in window) {
+    (window as Window & typeof globalThis).requestIdleCallback(boot, { timeout: 1500 });
+  } else {
+    setTimeout(boot, 200);
+  }
+</script>

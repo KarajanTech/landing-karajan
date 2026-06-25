@@ -1,0 +1,249 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+import { site } from "../../data/site";
+---
+
+<section class="section briefing" id="briefing">
+  <hr class="hairline" />
+  <div class="container briefing__grid">
+    <div class="briefing__copy">
+      <Eyebrow index="08" label="Briefing" />
+      <h2 class="text-h2 briefing__title">Request a briefing.</h2>
+      <p class="lead briefing__lede">
+        A focused, technical conversation — the architecture, where it fits your fleet, and what a
+        first deployment looks like. No deck-ware.
+      </p>
+      <p class="briefing__direct">
+        Prefer email? Write to{" "}
+        <a class="link-underline" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+        <!-- Placeholder address — replace with the real inbox before launch. -->
+      </p>
+    </div>
+
+    <div class="briefing__panel">
+      <!--
+        Honest wiring, no fake backend:
+        • Default: submitting opens the visitor's mail client to the contact address.
+        • To collect server-side instead, set FORM_ENDPOINT (Formspree/Basin/etc.)
+          in the script below — the form will POST there and show the success state.
+      -->
+      <form
+        class="form"
+        id="briefing-form"
+        action={`mailto:${site.contactEmail}`}
+        method="post"
+        enctype="text/plain"
+        novalidate
+      >
+        <div class="field">
+          <label for="email" class="field__label">Work email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            required
+            placeholder="you@organisation.eu"
+            aria-describedby="email-help email-error"
+          />
+          <p id="email-help" class="field__help">
+            Defence, infrastructure, and operator enquiries welcome.
+          </p>
+          <p id="email-error" class="field__error" role="alert" hidden>
+            Enter a valid email address.
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="note" class="field__label">
+            What would you like to coordinate? <span class="field__opt">(optional)</span>
+          </label>
+          <textarea id="note" name="note" rows="3" placeholder="Fleet, domain, timeframe…"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn--primary form__submit">Request a briefing</button>
+
+        <p class="form__success" id="form-success" role="status" aria-live="polite" hidden>
+          Thanks — opening your mail client so you can send the request. If nothing happens, write
+          to{" "}
+          <a class="link-underline" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style>
+  .briefing__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  .briefing__title {
+    margin-top: 1.5rem;
+  }
+  .briefing__lede {
+    margin-top: 1.3rem;
+    max-width: 46ch;
+  }
+  .briefing__direct {
+    margin-top: 1.8rem;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+
+  .briefing__panel {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+  }
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .field__label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .field__opt {
+    color: var(--color-text-faint);
+  }
+  input,
+  textarea {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-text);
+    background: var(--color-ink);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    width: 100%;
+    transition: border-color 0.18s var(--ease-out);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-faint);
+  }
+  input:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--color-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+    outline-offset: 1px;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 3.2rem;
+  }
+  .field__help {
+    font-size: 0.78rem;
+    color: var(--color-text-faint);
+  }
+  .field__error {
+    font-size: 0.8rem;
+    color: var(--color-alert);
+  }
+  input[aria-invalid="true"] {
+    border-color: var(--color-alert);
+  }
+
+  .form__submit {
+    align-self: flex-start;
+    margin-top: 0.2rem;
+  }
+  .form__success {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-hairline);
+    padding-top: 1rem;
+  }
+
+  @media (min-width: 880px) {
+    .briefing__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+
+<script>
+  // ── Configure to collect server-side. Leave null to use the mailto fallback. ──
+  const FORM_ENDPOINT: string | null = null; // e.g. "https://formspree.io/f/xxxxxx"
+
+  const form = document.getElementById("briefing-form") as HTMLFormElement | null;
+  const email = document.getElementById("email") as HTMLInputElement | null;
+  const error = document.getElementById("email-error");
+  const success = document.getElementById("form-success");
+  const submit = form?.querySelector<HTMLButtonElement>(".form__submit");
+
+  const valid = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+  const showError = (show: boolean) => {
+    if (!error || !email) return;
+    error.hidden = !show;
+    email.setAttribute("aria-invalid", String(show));
+  };
+
+  email?.addEventListener("input", () => {
+    if (email.getAttribute("aria-invalid") === "true" && valid(email.value)) showError(false);
+  });
+
+  form?.addEventListener("submit", async (e) => {
+    if (!email) return;
+    if (!valid(email.value)) {
+      e.preventDefault();
+      showError(true);
+      email.focus();
+      return;
+    }
+    showError(false);
+
+    // If a real endpoint is configured, submit via fetch and show success.
+    if (FORM_ENDPOINT) {
+      e.preventDefault();
+      try {
+        if (submit) {
+          submit.disabled = true;
+          submit.textContent = "Sending…";
+        }
+        const res = await fetch(FORM_ENDPOINT, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(form),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form
+          .querySelectorAll<HTMLElement>(".field, .form__submit")
+          .forEach((el) => (el.hidden = true));
+        if (success) {
+          success.hidden = false;
+          success.textContent = "Thanks — your request is in. We'll be in touch shortly.";
+        }
+      } catch {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "Request a briefing";
+        }
+        if (success) {
+          success.hidden = false;
+          success.textContent = "Something went wrong. Please email us directly instead.";
+        }
+      }
+      return;
+    }
+
+    // Default: let the mailto action proceed and surface an honest success note.
+    if (success) success.hidden = false;
+  });
+</script>

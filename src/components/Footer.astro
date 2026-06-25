@@ -1,0 +1,123 @@
+---
+import { site } from "../data/site";
+const year = 2026; // build-stamped; update via your deploy if you prefer dynamic.
+---
+
+<footer class="site-footer">
+  <hr class="hairline" />
+  <div class="container site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="wordmark">{site.wordmark}</span>
+      <p class="site-footer__line">{site.tagline}</p>
+      <p class="site-footer__origin">
+        <span class="dot" aria-hidden="true"></span> Built in Europe.
+      </p>
+    </div>
+
+    <div class="site-footer__cols">
+      <div class="site-footer__col">
+        <span class="eyebrow"><span class="eyebrow__sep" aria-hidden="true"></span>Contact</span>
+        <a class="link-underline" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+      </div>
+      <div class="site-footer__col">
+        <span class="eyebrow"><span class="eyebrow__sep" aria-hidden="true"></span>Legal</span>
+        <!-- Placeholders — wire up before launch. -->
+        <a class="link-underline" href="#">Privacy</a>
+        <a class="link-underline" href="#">Imprint</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container site-footer__base">
+    <span>© {year} {site.name}. All rights reserved.</span>
+    <span class="site-footer__meta">One layer. Every machine. One mission.</span>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 2.5rem;
+  }
+  .site-footer__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-top: 3.5rem;
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: 0.32em;
+    color: var(--color-text);
+  }
+  .site-footer__line {
+    margin-top: 1rem;
+    max-width: 34ch;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .site-footer__origin {
+    margin-top: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+
+  .site-footer__cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+  .site-footer__col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+  .site-footer__col a {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+  .site-footer__col a:hover {
+    color: var(--color-text);
+  }
+
+  .site-footer__base {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-hairline);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2rem;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-faint);
+  }
+  .site-footer__meta {
+    color: var(--color-text-faint);
+  }
+
+  @media (min-width: 720px) {
+    .site-footer__inner {
+      grid-template-columns: 1.4fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

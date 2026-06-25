@@ -1,0 +1,71 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+---
+
+<section class="section sov" id="sovereignty">
+  <hr class="hairline" />
+  <div class="container">
+    <Eyebrow index="07" label="Why now" />
+
+    <div class="sov__grid">
+      <div class="sov__lead reveal">
+        <h2 class="text-h2 sov__title">European autonomy needs a sovereign conductor.</h2>
+        <p class="lead sov__body">
+          Europe is fielding autonomous systems faster than it can coordinate them. The strategic
+          gap is not a shortage of machines — it is the absence of a neutral, sovereign layer to
+          conduct them, accountably. Karajan is built in Europe for exactly that.
+        </p>
+      </div>
+
+      <figure class="pullquote reveal">
+        <blockquote>
+          A continent can field a thousand machines and still lack the one thing that turns them
+          into a force — a way to <em>conduct</em> them, accountably.
+        </blockquote>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sov__grid {
+    margin-top: 2.6rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .sov__title {
+    max-width: 18ch;
+  }
+  .sov__body {
+    margin-top: 1.5rem;
+    max-width: 54ch;
+  }
+
+  .pullquote {
+    margin: 0;
+    border-left: 1px solid var(--color-accent-dim);
+    padding-left: clamp(1.4rem, 3vw, 2.4rem);
+  }
+  .pullquote blockquote {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 1rem + 2.2vw, 2.4rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+    text-wrap: balance;
+  }
+  .pullquote em {
+    font-style: italic;
+    color: var(--color-accent);
+  }
+
+  @media (min-width: 880px) {
+    .sov__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

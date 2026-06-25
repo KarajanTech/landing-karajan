@@ -1,0 +1,287 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+
+const modules = [
+  "Interoperability fabric",
+  "World model",
+  "Decision & planning",
+  "Explainability",
+  "Human-supervision controls",
+];
+
+const assets = [
+  { label: "UAV", glyph: "tri" },
+  { label: "UGV", glyph: "sq" },
+  { label: "USV", glyph: "hull" },
+  { label: "Sensor", glyph: "ci" },
+  { label: "Effector", glyph: "diamond" },
+  { label: "3rd-party", glyph: "dashed" },
+];
+---
+
+<section class="section" id="architecture">
+  <hr class="hairline" />
+  <div class="container">
+    <div class="arch__head">
+      <Eyebrow index="05" label="Architecture" />
+      <h2 class="text-h2 arch__title">From intent to coordinated action.</h2>
+      <p class="lead arch__lede">
+        One intent enters at the top. Karajan translates it across every connected system and
+        returns coordinated action — with a full audit trail running the other way.
+      </p>
+    </div>
+
+    <figure
+      class="arch reveal"
+      aria-label="Architecture in three tiers. Top: command — the operator and C2 send intent down and receive coordinated action and a full audit trail back. Middle: the Karajan core — interoperability fabric, world model, decision and planning, explainability, and human-supervision controls. Bottom: edge and assets — UAVs, UGVs, USVs, sensors, effectors, and third-party platforms. The core conducts the assets below."
+    >
+      <!-- Command -->
+      <div class="band band--command">
+        <span class="band__tag">Command</span>
+        <div class="band__main">
+          <span class="band__name">Operator · C2</span>
+          <span class="band__sub">Intent in · coordinated action out · full audit trail</span>
+        </div>
+      </div>
+
+      <!-- Command ↔ core connector -->
+      <div class="flow" aria-hidden="true">
+        <span class="flow__arrow flow__arrow--down">
+          <span class="flow__label">intent</span>
+        </span>
+        <span class="flow__arrow flow__arrow--up">
+          <span class="flow__label">action · audit</span>
+        </span>
+      </div>
+
+      <!-- Karajan core -->
+      <div class="band band--core">
+        <span class="band__tag band__tag--accent">Karajan core</span>
+        <ul class="modules">
+          {modules.map((m) => <li class="module">{m}</li>)}
+        </ul>
+      </div>
+
+      <!-- Conducting fan: core → assets -->
+      <svg class="fan" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+        {
+          assets.map((_, i) => {
+            const x = ((i + 0.5) / assets.length) * 1000;
+            return <line x1="500" y1="0" x2={x} y2="56" class={i % 2 === 0 ? "fan__lit" : ""} />;
+          })
+        }
+      </svg>
+
+      <!-- Edge & assets -->
+      <div class="band band--assets">
+        <span class="band__tag">Edge &amp; assets</span>
+        <ul class="assets">
+          {
+            assets.map((a) => (
+              <li class="asset">
+                <svg class="asset__glyph" viewBox="0 0 16 16" aria-hidden="true">
+                  {a.glyph === "tri" && <polygon points="8,1 15,15 1,15" />}
+                  {a.glyph === "sq" && <rect x="2.5" y="2.5" width="11" height="11" />}
+                  {a.glyph === "ci" && <circle cx="8" cy="8" r="6" />}
+                  {a.glyph === "diamond" && (
+                    <rect x="3" y="3" width="10" height="10" transform="rotate(45 8 8)" />
+                  )}
+                  {a.glyph === "hull" && <path d="M1 6 H15 L12 14 H4 Z" />}
+                  {a.glyph === "dashed" && (
+                    <rect x="2.5" y="2.5" width="11" height="11" stroke-dasharray="3 2.4" />
+                  )}
+                </svg>
+                <span class="asset__label">{a.label}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <span class="band__sub band__sub--center">Any manufacturer · any standard</span>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .arch__head {
+    display: grid;
+    gap: 1.3rem;
+    max-width: 60ch;
+  }
+  .arch__lede {
+    max-width: 56ch;
+  }
+  .arch {
+    margin: 3.2rem 0 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .band {
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius);
+    padding: 1.15rem 1.3rem;
+  }
+  .band__tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .band__tag--accent {
+    color: var(--color-accent);
+  }
+  .band__main {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 1rem;
+  }
+  .band__name {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+  }
+  .band__sub {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+  .band__sub--center {
+    display: block;
+    margin-top: 1rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  .band--core {
+    border-color: var(--color-accent-dim);
+    background:
+      linear-gradient(color-mix(in srgb, var(--color-accent) 6%, transparent), transparent),
+      var(--color-surface);
+  }
+  .modules {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+  .module {
+    border: 1px solid var(--color-hairline);
+    border-radius: 4px;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.86rem;
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-surface-2) 60%, transparent);
+    text-align: center;
+  }
+
+  /* Command ↔ core flow */
+  .flow {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding: 0.65rem 0;
+  }
+  .flow__arrow {
+    position: relative;
+    width: 1px;
+    height: 2.1rem;
+    background: var(--color-hairline);
+  }
+  .flow__arrow--down {
+    background: linear-gradient(to bottom, var(--color-accent-dim), var(--color-hairline));
+  }
+  .flow__arrow::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    border-right: 1px solid var(--color-text-faint);
+    border-bottom: 1px solid var(--color-text-faint);
+  }
+  .flow__arrow--down::after {
+    bottom: 0;
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .flow__arrow--up::after {
+    top: 0;
+    transform: translateX(-50%) rotate(-135deg);
+  }
+  .flow__label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 0.4rem;
+    background: var(--color-ink);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  /* Conducting fan */
+  .fan {
+    width: 100%;
+    height: 56px;
+    stroke: var(--color-hairline);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .fan__lit {
+    stroke: var(--color-accent-dim);
+  }
+
+  /* Assets */
+  .assets {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.7rem;
+  }
+  .asset {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.9rem 0.4rem;
+    border: 1px solid var(--color-hairline);
+    border-radius: 4px;
+  }
+  .asset__glyph {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--color-text-muted);
+    stroke-width: 1.2;
+  }
+  .asset__label {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  @media (min-width: 720px) {
+    .modules {
+      grid-template-columns: repeat(5, 1fr);
+    }
+    .assets {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+</style>

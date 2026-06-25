@@ -1,0 +1,168 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+import { domains } from "../../data/site";
+
+const beachhead = domains.find((d) => d.status === "now")!;
+const roadmap = domains.filter((d) => d.status === "roadmap");
+---
+
+<section class="section" id="domains">
+  <hr class="hairline" />
+  <div class="container">
+    <div class="dom__head">
+      <Eyebrow index="06" label="Domains" />
+      <h2 class="text-h2 dom__title">
+        Defence first. Built to extend everywhere autonomy operates.
+      </h2>
+    </div>
+
+    <div class="dom__grid">
+      <!-- Beachhead — now -->
+      <article class="beachhead reveal">
+        <div class="beachhead__status">
+          <span class="beachhead__dot" aria-hidden="true"></span>
+          Active focus
+        </div>
+        <h3 class="beachhead__name">{beachhead.name}</h3>
+        <p class="beachhead__blurb">{beachhead.blurb}</p>
+        <p class="beachhead__note">
+          A sovereign command layer for multi-vendor unmanned systems — where neutrality,
+          explainability, and resilience are not features but requirements.
+        </p>
+      </article>
+
+      <!-- Roadmap — the trajectory -->
+      <div class="roadmap reveal">
+        <span class="roadmap__label">Trajectory</span>
+        <ol class="roadmap__list">
+          {
+            roadmap.map((d) => (
+              <li class="roadmap__item">
+                <span class="roadmap__idx">{d.index}</span>
+                <div>
+                  <h4 class="roadmap__name">{d.name}</h4>
+                  <p class="roadmap__blurb">{d.blurb}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .dom__head {
+    display: grid;
+    gap: 1.3rem;
+    max-width: 50ch;
+  }
+
+  .dom__grid {
+    margin-top: 3.2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Beachhead */
+  .beachhead {
+    border: 1px solid var(--color-accent-dim);
+    border-radius: var(--radius);
+    padding: clamp(1.8rem, 3vw, 2.6rem);
+    background:
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--color-accent) 8%, transparent),
+        transparent 55%
+      ),
+      var(--color-surface);
+    display: flex;
+    flex-direction: column;
+  }
+  .beachhead__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .beachhead__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .beachhead__name {
+    margin-top: 1.4rem;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+  }
+  .beachhead__blurb {
+    margin-top: 0.9rem;
+    font-size: var(--text-lead);
+    color: var(--color-text);
+    max-width: 34ch;
+  }
+  .beachhead__note {
+    margin-top: 1.4rem;
+    color: var(--color-text-muted);
+    max-width: 42ch;
+  }
+
+  /* Roadmap */
+  .roadmap {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius);
+    padding: clamp(1.6rem, 3vw, 2.2rem);
+    background: var(--color-surface);
+  }
+  .roadmap__label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .roadmap__list {
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
+  }
+  .roadmap__item {
+    display: flex;
+    gap: 1.1rem;
+    padding: 1.1rem 0;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .roadmap__item:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .roadmap__idx {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-accent-dim);
+    padding-top: 0.2rem;
+    min-width: 1.4rem;
+  }
+  .roadmap__name {
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+  .roadmap__blurb {
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 880px) {
+    .dom__grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+</style>

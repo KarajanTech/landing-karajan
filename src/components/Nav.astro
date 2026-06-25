@@ -1,0 +1,228 @@
+---
+import { nav, site } from "../data/site";
+---
+
+<header class="site-nav" id="site-nav" data-scrolled="false">
+  <div class="container site-nav__inner">
+    <a class="wordmark" href="#top" aria-label={`${site.name} — home`}>{site.wordmark}</a>
+
+    <nav class="site-nav__links" aria-label="Primary">
+      {
+        nav.map((item) => (
+          <a class="link-underline" href={item.href}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="site-nav__actions">
+      <a class="btn btn--primary site-nav__cta" href="#briefing">Request a briefing</a>
+      <button
+        class="site-nav__toggle"
+        type="button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <span class="site-nav__bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobile-menu" hidden>
+    <nav class="mobile-menu__links" aria-label="Primary mobile">
+      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+      <a class="btn btn--primary mobile-menu__cta" href="#briefing">Request a briefing</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color 0.25s var(--ease-out),
+      border-color 0.25s var(--ease-out),
+      backdrop-filter 0.25s var(--ease-out);
+  }
+  .site-nav[data-scrolled="true"] {
+    background: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    backdrop-filter: blur(10px) saturate(120%);
+    border-bottom-color: var(--color-hairline);
+  }
+
+  .site-nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: 4.5rem;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: 0.32em;
+    padding-left: 0.04em; /* optical balance for tracked-out caps */
+    color: var(--color-text);
+  }
+
+  .site-nav__links {
+    display: none;
+    gap: 2rem;
+  }
+  .site-nav__links a {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    transition: color 0.18s var(--ease-out);
+  }
+  .site-nav__links a:hover {
+    color: var(--color-text);
+  }
+
+  .site-nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .site-nav__cta {
+    display: none;
+  }
+
+  /* Hamburger */
+  .site-nav__toggle {
+    --bar: var(--color-text);
+    position: relative;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.18s var(--ease-out);
+  }
+  .site-nav__toggle:hover {
+    border-color: var(--color-accent);
+  }
+  .site-nav__bars,
+  .site-nav__bars::before,
+  .site-nav__bars::after {
+    content: "";
+    display: block;
+    width: 1.05rem;
+    height: 1.5px;
+    background: var(--bar);
+    transition:
+      transform 0.2s var(--ease-out),
+      opacity 0.2s var(--ease-out);
+  }
+  .site-nav__bars::before {
+    position: absolute;
+    transform: translateY(-6px);
+  }
+  .site-nav__bars::after {
+    position: absolute;
+    transform: translateY(6px);
+  }
+  .site-nav__toggle[aria-expanded="true"] .site-nav__bars {
+    background: transparent;
+  }
+  .site-nav__toggle[aria-expanded="true"] .site-nav__bars::before {
+    transform: rotate(45deg);
+  }
+  .site-nav__toggle[aria-expanded="true"] .site-nav__bars::after {
+    transform: rotate(-45deg);
+  }
+
+  /* Mobile menu panel */
+  .mobile-menu {
+    border-top: 1px solid var(--color-hairline);
+    background: color-mix(in srgb, var(--color-ink) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+  .mobile-menu[hidden] {
+    display: none;
+  }
+  .mobile-menu__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem clamp(1.25rem, 5vw, 4rem) 1.75rem;
+  }
+  .mobile-menu__links a:not(.mobile-menu__cta) {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .mobile-menu__links a:not(.mobile-menu__cta):hover {
+    color: var(--color-text);
+  }
+  .mobile-menu__cta {
+    margin-top: 1.1rem;
+    border-bottom: 0;
+    color: var(--color-ink);
+  }
+
+  @media (min-width: 880px) {
+    .site-nav__links {
+      display: flex;
+    }
+    .site-nav__cta {
+      display: inline-flex;
+    }
+    .site-nav__toggle {
+      display: none;
+    }
+    .mobile-menu {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.getElementById("site-nav");
+  const toggle = header?.querySelector<HTMLButtonElement>(".site-nav__toggle");
+  const menu = document.getElementById("mobile-menu");
+
+  // Scroll state — gains a hairline + blur once past the hero edge.
+  const onScroll = () => header?.setAttribute("data-scrolled", String(window.scrollY > 8));
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  // Mobile menu toggle
+  const setOpen = (open: boolean) => {
+    if (!toggle || !menu) return;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    menu.hidden = !open;
+  };
+
+  toggle?.addEventListener("click", () => {
+    setOpen(toggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  // Close on link click and on Escape
+  menu?.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(false)));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && toggle?.getAttribute("aria-expanded") === "true") {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+</script>

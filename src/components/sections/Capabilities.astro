@@ -1,0 +1,121 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+import { capabilities } from "../../data/site";
+---
+
+<section class="section" id="capabilities">
+  <hr class="hairline" />
+  <div class="container">
+    <div class="caps__head">
+      <Eyebrow index="04" label="Capabilities" />
+      <h2 class="text-h2 caps__title">Four principles, held without compromise.</h2>
+    </div>
+
+    <ul class="caps__grid">
+      {
+        capabilities.map((c) => (
+          <li class="cap reveal">
+            <div class="cap__top">
+              <span class="cap__label">{c.label}</span>
+              <span class="cap__idx">{c.index}</span>
+            </div>
+            <h3 class="cap__title">{c.title}</h3>
+            <p class="cap__body">{c.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .caps__head {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    max-width: 38ch;
+  }
+  .caps__title {
+    margin-top: 0.4rem;
+  }
+
+  .caps__grid {
+    list-style: none;
+    margin: 3.2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .cap {
+    position: relative;
+    padding: clamp(1.6rem, 3vw, 2.4rem);
+    border-bottom: 1px solid var(--color-hairline);
+    transition: background-color 0.2s var(--ease-out);
+  }
+  .cap:last-child {
+    border-bottom: 0;
+  }
+  .cap::before {
+    /* corner tick — draws in on hover */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--color-accent);
+    transition: width 0.28s var(--ease-out);
+  }
+  .cap:hover {
+    background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+  }
+  .cap:hover::before {
+    width: 2.5rem;
+  }
+
+  .cap__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .cap__label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    color: var(--color-accent-dim);
+  }
+  .cap__idx {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-faint);
+  }
+  .cap__title {
+    margin-top: 1.4rem;
+    font-size: var(--text-h3);
+  }
+  .cap__body {
+    margin-top: 0.8rem;
+    color: var(--color-text-muted);
+    max-width: 44ch;
+  }
+
+  @media (min-width: 760px) {
+    .caps__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .cap {
+      border-right: 1px solid var(--color-hairline);
+    }
+    .cap:nth-child(2n) {
+      border-right: 0;
+    }
+    .cap:nth-last-child(2):nth-child(odd) {
+      border-bottom: 0;
+    }
+  }
+</style>

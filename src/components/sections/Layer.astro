@@ -1,0 +1,176 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+---
+
+<section class="section" id="layer">
+  <hr class="hairline" />
+  <div class="container layer__grid">
+    <div class="layer__copy reveal">
+      <Eyebrow index="03" label="The layer" />
+      <h2 class="text-h2 layer__title">A neutral layer that conducts what you already own.</h2>
+      <p class="lead layer__lede">
+        Karajan sits above the hardware and below the operator. It ingests heterogeneous systems,
+        reasons about the mission, and issues coordinated, explainable actions — with a human always
+        in command.
+      </p>
+      <ul class="layer__list">
+        <li><span aria-hidden="true">→</span> Intent in, coordinated action out.</li>
+        <li><span aria-hidden="true">→</span> One picture across every vendor and domain.</li>
+        <li>
+          <span aria-hidden="true">→</span> A full, legible audit trail behind every decision.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Three-tier diagram: command ↔ Karajan ↔ assets -->
+    <figure
+      class="tiers reveal"
+      aria-label="Three tiers: the operator's command above, Karajan's orchestration layer in the middle, and heterogeneous assets below."
+    >
+      <div class="tier tier--command">
+        <span class="tier__tag">Command</span>
+        <span class="tier__body">Operator · C2 — intent in, action out</span>
+      </div>
+
+      <div class="tier__link" aria-hidden="true"></div>
+
+      <div class="tier tier--core">
+        <span class="tier__tag">Karajan</span>
+        <span class="tier__body">Interoperability · world model · decision · supervision</span>
+        <span class="tier__pulse" aria-hidden="true"></span>
+      </div>
+
+      <div class="tier__link" aria-hidden="true"></div>
+
+      <div class="tier tier--assets">
+        <span class="tier__tag">Assets</span>
+        <div class="tier__glyphs" aria-hidden="true">
+          <svg viewBox="0 0 14 14" class="gl"><polygon points="7,1 13,13 1,13"></polygon></svg>
+          <svg viewBox="0 0 14 14" class="gl"><rect x="2" y="2" width="10" height="10"></rect></svg>
+          <svg viewBox="0 0 14 14" class="gl"><circle cx="7" cy="7" r="5.5"></circle></svg>
+          <svg viewBox="0 0 14 14" class="gl"><polygon points="7,1 13,13 1,13"></polygon></svg>
+          <svg viewBox="0 0 14 14" class="gl"><rect x="2" y="2" width="10" height="10"></rect></svg>
+        </div>
+        <span class="tier__body">UAV · UGV · USV · sensors · effectors — any vendor</span>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .layer__grid {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+    align-items: center;
+  }
+  .layer__title {
+    margin-top: 1.6rem;
+    max-width: 20ch;
+  }
+  .layer__lede {
+    margin-top: 1.4rem;
+    max-width: 52ch;
+  }
+  .layer__list {
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.85rem;
+    color: var(--color-text-muted);
+    font-size: 0.98rem;
+  }
+  .layer__list span {
+    color: var(--color-accent);
+    margin-right: 0.6rem;
+  }
+
+  /* Diagram */
+  .tiers {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tier {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .tier__tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .tier__body {
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+  }
+  .tier--core {
+    border-color: var(--color-accent-dim);
+    background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+  }
+  .tier--core .tier__tag {
+    color: var(--color-accent);
+  }
+  .tier__pulse {
+    position: absolute;
+    right: 1.1rem;
+    top: 1.25rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 60%, transparent);
+    animation: tier-pulse 2.4s var(--ease-out) infinite;
+  }
+  @keyframes tier-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 55%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 9px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  .tier__link {
+    width: 1px;
+    height: 1.9rem;
+    margin-inline: auto;
+    background: linear-gradient(to bottom, var(--color-accent-dim), var(--color-hairline));
+  }
+  .tier__glyphs {
+    display: flex;
+    gap: 0.7rem;
+    margin: 0.2rem 0;
+  }
+  .gl {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: var(--color-text-faint);
+    stroke-width: 1.2;
+  }
+
+  @media (min-width: 880px) {
+    .layer__grid {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tier__pulse {
+      animation: none;
+    }
+  }
+</style>

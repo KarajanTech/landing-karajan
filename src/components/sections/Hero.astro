@@ -1,0 +1,143 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+import HeroCanvas from "../HeroCanvas.astro";
+---
+
+<section class="hero" id="top">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <Eyebrow index="01" label="Orchestration layer" />
+
+      <h1 class="text-hero hero__title">
+        The <span class="accent">conductor</span> for autonomous systems.
+      </h1>
+
+      <p class="lead hero__sub">
+        Karajan is the vendor-neutral orchestration and decision layer that turns fragmented fleets
+        of drones, robots, and sensors into a single, explainable, human-supervised mission network.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#briefing">Request a briefing</a>
+        <a class="btn-link" href="#layer">
+          How it works <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+
+      <!--
+        Honest social-proof framing for an early-stage company. No fabricated logos
+        or metrics. Replace or remove as real references become public.
+      -->
+      <p class="hero__proof">
+        <span class="hero__proof-dot" aria-hidden="true"></span>
+        In conversation with European defence &amp; infrastructure operators.
+      </p>
+    </div>
+
+    <div class="hero__visual">
+      <HeroCanvas />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding-top: clamp(2.5rem, 7vw, 5rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .hero__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+    min-height: min(82vh, 760px);
+  }
+
+  .hero__title {
+    margin-top: 1.6rem;
+    max-width: 16ch;
+  }
+  .accent {
+    color: var(--color-accent);
+  }
+
+  .hero__sub {
+    margin-top: 1.6rem;
+    max-width: 52ch;
+  }
+
+  .hero__actions {
+    margin-top: 2.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.6rem;
+  }
+  .btn-link {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding: 0.85rem 0.2rem;
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.18s var(--ease-out),
+      border-color 0.18s var(--ease-out);
+  }
+  .btn-link:hover {
+    color: var(--color-text);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .hero__proof {
+    margin-top: 2.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+  .hero__proof-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-alert);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-alert) 60%, transparent);
+    animation: live 2.6s var(--ease-out) infinite;
+  }
+  @keyframes live {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-alert) 55%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  .hero__visual {
+    order: -1; /* visual sits above copy on mobile stack */
+  }
+
+  @media (min-width: 880px) {
+    .hero__grid {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+    .hero__visual {
+      order: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__proof-dot {
+      animation: none;
+    }
+  }
+</style>

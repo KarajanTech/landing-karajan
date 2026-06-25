@@ -1,0 +1,106 @@
+---
+import Eyebrow from "../Eyebrow.astro";
+
+const points = [
+  {
+    k: "Closed stacks",
+    v: "Every platform ships its own console, protocol, and autonomy. None of them were built to talk to the others.",
+  },
+  {
+    k: "A wall of consoles",
+    v: "Operators stitch the picture together by hand across a dozen screens — under time pressure, in the worst conditions.",
+  },
+  {
+    k: "Failure where it counts",
+    v: "Coordination breaks exactly where it matters most: contested, denied, degraded environments.",
+  },
+];
+---
+
+<section class="section" id="problem">
+  <div class="container">
+    <Eyebrow index="02" label="The problem" />
+
+    <div class="problem__head">
+      <h2 class="text-h2 problem__title">Autonomy is fragmented by design.</h2>
+      <p class="lead problem__lede">
+        Mixed fleets are assembled from vendors that never agreed on anything. The result is the
+        worst kind of gap — <span class="emph">capability you own but cannot conduct</span>.
+      </p>
+    </div>
+
+    <ol class="problem__points reveal">
+      {
+        points.map((p, i) => (
+          <li class="problem__point">
+            <span class="problem__num">{String(i + 1).padStart(2, "0")}</span>
+            <h3 class="problem__k">{p.k}</h3>
+            <p class="problem__v">{p.v}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .problem__head {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+  .problem__title {
+    max-width: 18ch;
+  }
+  .problem__lede {
+    max-width: 56ch;
+  }
+  .emph {
+    color: var(--color-text);
+  }
+
+  .problem__points {
+    list-style: none;
+    margin: 3.4rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .problem__point {
+    padding: 1.8rem 0;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .problem__num {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-dim);
+  }
+  .problem__k {
+    font-size: var(--text-h3);
+    margin-top: 0.7rem;
+  }
+  .problem__v {
+    margin-top: 0.6rem;
+    max-width: 46ch;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 760px) {
+    .problem__head {
+      grid-template-columns: 1.1fr 1fr;
+      align-items: end;
+      gap: 3rem;
+    }
+    .problem__points {
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 2.5rem;
+    }
+    .problem__point {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
+</style>
