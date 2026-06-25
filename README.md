@@ -88,13 +88,21 @@ these and swap in real values:
   website domain matches the email domain (`karajan.io`) before launch.
 - **Contact email** — `contact@karajan.io`, set in [`src/data/site.ts`](src/data/site.ts).
 - **Briefing form → Supabase** — the form writes each request straight to a Supabase (Postgres)
-  table via its REST API. One-time setup: in the Supabase dashboard open **SQL Editor**, paste
-  [`supabase/schema.sql`](supabase/schema.sql), and **Run** — that creates the `briefing_requests`
-  table and a row-level-security policy that lets anonymous visitors _insert only_ (they can't read
-  other submissions). The project URL and **public anon key** live in the `<script>` of
-  [`src/components/sections/Briefing.astro`](src/components/sections/Briefing.astro); the anon key is
-  designed to be public, and your data stays protected by RLS. Read submissions in the dashboard
-  under **Table editor → briefing_requests**.
+  table via its REST API. Two steps:
+  1. **Create the table.** In the Supabase dashboard open **SQL Editor**, paste
+     [`supabase/schema.sql`](supabase/schema.sql), and **Run** — that creates the `briefing_requests`
+     table and a row-level-security policy that lets anonymous visitors _insert only_ (they can't read
+     other submissions). Read submissions under **Table editor → briefing_requests**.
+  2. **Set the env vars.** Locally, copy [`.env.example`](.env.example) to `.env` and fill in your
+     project's `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` (Supabase dashboard → Project
+     settings → API). On **Vercel/Netlify**, add the same two variables in the project's
+     **Environment Variables** and redeploy. They are `PUBLIC_`-prefixed, so Astro inlines them into
+     the client bundle at build time — the anon key is meant to be public; RLS protects your data.
+  3. **(Optional) Email notifications.** Submissions are stored in the table either way. To also get
+     an email per request, create a [Resend](https://resend.com) account + API key, then run
+     [`supabase/email-notify.sql`](supabase/email-notify.sql) in the SQL Editor (fill in your key,
+     recipient, and sender first). It adds a database trigger that emails you via Resend on every new
+     row — the Resend key lives only in the database (server-side), never in the client bundle.
 - **Legal links** — `Privacy` / `Imprint` in [`src/components/Footer.astro`](src/components/Footer.astro)
   point to `#`.
 - **Social proof** — the hero line _"In conversation with European defence & infrastructure

@@ -182,13 +182,11 @@ import { site } from "../../data/site";
 
 <script>
   // ── Supabase project ────────────────────────────────────────────────────────
-  // The anon key is PUBLIC by design — safe to ship in client code. The table is
-  // protected by row-level security (the anon role can only INSERT, never read),
-  // so submissions go straight to your database and nothing sensitive is exposed.
-  // To rotate the key or point at another project, edit these two lines.
-  const SUPABASE_URL = "https://cpnbzetijphqvkwivvup.supabase.co";
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwbmJ6ZXRpanBocXZrd2l2dnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODc4OTMsImV4cCI6MjA5Nzk2Mzg5M30.Vi2Dv_w99MA9-FovzDKeM4Qyb4aXDD-2QBPi6a8nfcw";
+  // Configured via PUBLIC_SUPABASE_* env vars (.env locally; project settings on
+  // your host). These are public values — the anon key is safe to expose; your
+  // data is protected by row-level security (see supabase/schema.sql).
+  const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   const TABLE = "briefing_requests";
 
   const form = document.getElementById("briefing-form") as HTMLFormElement | null;
@@ -221,6 +219,14 @@ import { site } from "../../data/site";
     }
     showFieldError(false);
     if (submitError) submitError.hidden = true;
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      if (submitError) submitError.hidden = false;
+      console.error(
+        "Supabase is not configured — set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY.",
+      );
+      return;
+    }
 
     const restore = submit?.textContent ?? "Request a briefing";
     if (submit) {
